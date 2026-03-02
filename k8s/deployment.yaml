@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: energy-quant-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: energy-quant-api
+  template:
+    metadata:
+      labels:
+        app: energy-quant-api
+    spec:
+      containers:
+      - name: api
+        image: energy-quant-api:latest
+        ports:
+        - containerPort: 8000
+        resources:
+          limits:
+            nvidia.com/gpu: 1  # Request GPU for heavy ML models

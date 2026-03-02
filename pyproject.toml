@@ -4,15 +4,20 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "energy-trading-quant-tools"
-version = "0.1.0"
-description = "Modular tools and quantitative models for energy trading development."
+version = "0.2.0"
+description = "Full-stack quant engineering system for energy trading."
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [{name = "Gencer Sarp Mert"}]
 dependencies = [
   "numpy>=1.26",
   "pandas>=2.1",
+  "scipy>=1.11",
+  "fastapi>=0.109",
+  "uvicorn>=0.27",
+  "pydantic>=2.5",
+  "kafka-python>=2.0",
 ]
 
 [project.optional-dependencies]
@@ -26,13 +31,3 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
-
-[tool.pytest.ini_options]
-addopts = "-q"
-testpaths = ["tests"]
-
-[tool.ruff]
-line-length = 100
-
-[tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
