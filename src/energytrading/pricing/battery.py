@@ -1,29 +1,44 @@
 import numpy as np
+import pulp
 
 class BatteryStorageOptimizer:
-    """Evaluates battery storage dispatch optimization."""
-    def __init__(self, capacity: float, max_charge: float, max_discharge: float, efficiency: float = 0.9):
+    """Production-grade battery storage optimization using Linear Programming."""
+    def __init__(self, capacity: float, max_charge: float, max_discharge: float, 
+                 efficiency: float = 0.9, degradation_cost: float = 0.5):
         self.capacity = capacity
-        self.charge_rate = max_charge
-        self.discharge_rate = max_discharge
+        self.max_charge = max_charge
+        self.max_discharge = max_discharge
         self.efficiency = efficiency
+        self.degradation_cost = degradation_cost
 
     def optimize_schedule(self, prices: np.ndarray) -> np.ndarray:
         """
-        Simple greedy dispatch under perfect foresight for backtesting.
-        (Production uses LP/MIP solvers like PuLP/Gurobi)
+        Optimizes battery dispatch over a price horizon using LP.
+        Objective: Maximize Arbitrage Revenue - Degradation Costs.
         """
-        schedule = np.zeros_like(prices)
-        soc = 0.0
-        mean_price = np.mean(prices)
+        T = len(prices)
+        prob = pulp.LpProblem("Battery_Optimization", pulp.LpMaximize)
         
-        for i, p in enumerate(prices):
-            if p > mean_price and soc > 0:
-                discharge = min(self.discharge_rate, soc)
-                schedule[i] = -discharge
-                soc -= discharge
-            elif p < mean_price and soc < self.capacity:
-                charge = min(self.charge_rate, self.capacity - soc)
-                schedule[i] = charge
-                soc += charge * self.efficiency
-        return schedule
+        charge = pulp.LpVariable.dicts("Charge", range(T), lowBound=0, upBound=self.max_charge)
+        discharge = pulp.LpVariable.dicts("Discharge", range(T), lowBound=0, upBound=self.max_discharge)
+        soc = pulp.LpVariable.dicts("SoC", range(T+1), lowBound=0, upBound=self.capacity)
+        
+        # Objective: Profit = (Discharge * Price) - (Charge * Price) - Degradation
+        prob += pulp.lpSum([
+            prices[t] * discharge[t] - 
+            prices[t] * charge[t] - 
+            self.degradation_cost * (charge[t] + discharge[t]) 
+            for t in range(T)
+        ])
+        
+        # Constraints
+        prob += (soc[0] == 0.0) # Start empty
+        for t in range(T):
+            prob += (soc[t+1] == soc[t] + charge[t] * self.efficiency - discharge[t] / self.efficiency)
+            
+        # Ensure we end empty to realize full PnL (optional, but good practice)
+        prob += (soc[T] == 0.0)
+            
+        prob.solve(pulp.PULP_CBC_CMD(msg=False))
+        
+        return np.array([charge[t].varValue - discharge[t].varValue for t in range(T)])

@@ -1,7 +1,5 @@
-"""Data utilities (placeholder).
+"""Data utilities.
 
-Planned:
-- time zone alignment helpers
-- resampling and missing-value policies
-- feature generation (returns, spreads, rolling stats)
+Includes wrappers for real API ingestors, time zone aligners,
+and synthetic datasets for testing.
 """
