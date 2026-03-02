@@ -24,7 +24,7 @@ class MertonJumpDiffusion:
         self.params.sigma = float(np.std(returns) / np.sqrt(self.params.dt))
         logger.info("Fitted base diffusion. Jump params require advanced MCMC/MLE.")
 
-    def simulate(self, s0: float, n_steps: int, n_paths: int = 1, seed: int = None) -> np.ndarray:
+    def simulate(self, s0: float, n_steps: int, n_paths: int = 1, seed: int | None = None) -> np.ndarray:
         """Simulates paths using Geometric Brownian Motion with Poisson jumps."""
         rng = np.random.default_rng(seed)
         paths = np.zeros((n_steps + 1, n_paths))
