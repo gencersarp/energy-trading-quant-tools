@@ -1,8 +1,17 @@
 import numpy as np
 from scipy.stats import norm
 
-def margrabe_spark_spread(f_power: float, f_gas: float, vol_power: float, vol_gas: float, 
-                          rho: float, tau: float, heat_rate: float, r: float = 0.0) -> float:
+
+def margrabe_spark_spread(
+    f_power: float, 
+    f_gas: float, 
+    vol_power: float, 
+    vol_gas: float, 
+    rho: float, 
+    tau: float, 
+    heat_rate: float, 
+    r: float = 0.0
+) -> float:
     """
     Prices a spark spread option using Margrabe's formula.
     Payoff: Max(Power - HeatRate * Gas, 0)
