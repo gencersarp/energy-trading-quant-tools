@@ -1,6 +1,6 @@
 import requests
 import pandas as pd
-from typing import Optional
+
 
 class EIAClient:
     """Client for US Energy Information Administration (EIA) API."""
@@ -16,12 +16,13 @@ class EIAClient:
             "frequency": frequency,
             "data[0]": "price"
         }
-        response = requests.get(url, params=params)
+        response = requests.get(url, params=params, timeout=10)
         if response.status_code == 200:
             data = response.json().get("response", {}).get("data", [])
             return pd.DataFrame(data)
-        else:
-            raise ConnectionError(f"EIA API Error: {response.text}")
+        
+        raise ConnectionError(f"EIA API Error: {response.text}")
+
 
 class ENTSOEClientStub:
     """Stub for European Network of Transmission System Operators for Electricity."""
@@ -33,5 +34,5 @@ class ENTSOEClientStub:
         Returns mock data as placeholder for real XML parsing.
         Use 'entsoe-py' in production for robust ENTSO-E parsing.
         """
-        dates = pd.date_range(start, end, freq='H')
+        dates = pd.date_range(start, end, freq="h")
         return pd.DataFrame({"Price": 50.0}, index=dates)

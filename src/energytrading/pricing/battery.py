@@ -1,6 +1,7 @@
 import numpy as np
 import pulp
 
+
 class BatteryStorageOptimizer:
     """Production-grade battery storage optimization using Linear Programming."""
     def __init__(self, capacity: float, max_charge: float, max_discharge: float, 
@@ -16,29 +17,29 @@ class BatteryStorageOptimizer:
         Optimizes battery dispatch over a price horizon using LP.
         Objective: Maximize Arbitrage Revenue - Degradation Costs.
         """
-        T = len(prices)
+        t_len = len(prices)
         prob = pulp.LpProblem("Battery_Optimization", pulp.LpMaximize)
         
-        charge = pulp.LpVariable.dicts("Charge", range(T), lowBound=0, upBound=self.max_charge)
-        discharge = pulp.LpVariable.dicts("Discharge", range(T), lowBound=0, upBound=self.max_discharge)
-        soc = pulp.LpVariable.dicts("SoC", range(T+1), lowBound=0, upBound=self.capacity)
+        charge = pulp.LpVariable.dicts("Charge", range(t_len), lowBound=0, upBound=self.max_charge)
+        discharge = pulp.LpVariable.dicts("Discharge", range(t_len), lowBound=0, upBound=self.max_discharge)
+        soc = pulp.LpVariable.dicts("SoC", range(t_len + 1), lowBound=0, upBound=self.capacity)
         
         # Objective: Profit = (Discharge * Price) - (Charge * Price) - Degradation
         prob += pulp.lpSum([
             prices[t] * discharge[t] - 
             prices[t] * charge[t] - 
             self.degradation_cost * (charge[t] + discharge[t]) 
-            for t in range(T)
+            for t in range(t_len)
         ])
         
         # Constraints
         prob += (soc[0] == 0.0) # Start empty
-        for t in range(T):
-            prob += (soc[t+1] == soc[t] + charge[t] * self.efficiency - discharge[t] / self.efficiency)
+        for t in range(t_len):
+            prob += (soc[t + 1] == soc[t] + charge[t] * self.efficiency - discharge[t] / self.efficiency)
             
         # Ensure we end empty to realize full PnL (optional, but good practice)
-        prob += (soc[T] == 0.0)
+        prob += (soc[t_len] == 0.0)
             
         prob.solve(pulp.PULP_CBC_CMD(msg=False))
         
-        return np.array([charge[t].varValue - discharge[t].varValue for t in range(T)])
+        return np.array([charge[t].varValue - discharge[t].varValue for t in range(t_len)])

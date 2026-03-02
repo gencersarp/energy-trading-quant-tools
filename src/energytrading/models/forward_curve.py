@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import CubicSpline
 
+
 class ForwardCurveBuilder:
     """Builds smooth continuous forward curves from discrete market quotes."""
     def __init__(self):
@@ -16,9 +17,9 @@ class ForwardCurveBuilder:
         dates = []
         prices = []
         for _, row in blocks.iterrows():
-            dr = pd.date_range(row['start'], row['end'], freq='D')
+            dr = pd.date_range(row["start"], row["end"], freq="d")
             dates.extend(dr)
-            prices.extend([row['price']] * len(dr))
+            prices.extend([row["price"]] * len(dr))
         
         self.daily_curve = pd.Series(prices, index=dates)
         return self.daily_curve
@@ -29,9 +30,9 @@ class ForwardCurveBuilder:
         to generate a perfectly smooth daily forward curve.
         """
         numeric_dates = (anchor_dates - anchor_dates[0]).days.values
-        cs = CubicSpline(numeric_dates, prices, bc_type='natural')
+        cs = CubicSpline(numeric_dates, prices, bc_type="natural")
         
-        full_dates = pd.date_range(anchor_dates[0], anchor_dates[-1], freq='D')
+        full_dates = pd.date_range(anchor_dates[0], anchor_dates[-1], freq="d")
         full_numeric = (full_dates - anchor_dates[0]).days.values
         
         smoothed_prices = cs(full_numeric)
