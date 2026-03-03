@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "energy-trading-quant-tools"
-version = "0.3.0"
+version = "0.4.0"
 description = "Full-stack quant engineering system for energy trading."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -21,6 +21,7 @@ dependencies = [
   "kafka-python>=2.0",
   "pulp>=2.8",
   "requests>=2.31",
+  "hmmlearn>=0.3.0",
 ]
 
 [project.optional-dependencies]
